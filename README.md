@@ -1,4 +1,37 @@
-# React + TypeScript + Vite
+# Northstar workspace
+
+Northstar is a React dashboard backed by an Express API. The API persists projects and tasks in MongoDB when `MONGODB_URI` is configured and automatically uses seeded in-memory data for local UI work when it is not.
+
+## Run locally
+
+```bash
+npm install
+copy .env.example .env
+npm run server
+npm run dev
+```
+
+The frontend runs at `http://localhost:5173` and proxies `/api` requests to `http://localhost:4000`.
+
+Set `MONGODB_URI` and optionally `MONGODB_DB` in `.env` to enable MongoDB persistence. The server reuses one MongoDB client with a bounded pool and seeds the three demo collections only when they are empty.
+
+API endpoints include:
+
+- `GET /api/health` for service and database mode health
+- `GET /api/dashboard` for projects, tasks, and activity
+- `POST /api/projects` to create a project
+- `PATCH /api/tasks/:id` to persist task completion
+- `POST /api/invitations` to send an invitation event
+- `GET /api/events` for server-sent realtime updates
+
+Production checks:
+
+```bash
+npm run lint
+npm run build
+```
+
+## Template reference
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
