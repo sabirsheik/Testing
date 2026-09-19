@@ -1,4 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap');
+.project-row { transition: background .18s ease }
+.project-row:hover { background: #fcfcff }
+.project-name > span:last-child { min-width: 0 }
+.primary-button:disabled, .secondary-button:disabled { cursor: not-allowed; opacity: .65; transform: none }
 :root { --ink:#252534; --muted:#8b8e9f; --line:#e9eaf0; --purple:#6157d9; --purple-dark:#4b42be; --sidebar:#1f1d3b; --shadow:0 10px 28px rgba(43,38,86,.06) }
 * { box-sizing:border-box } button,input { font:inherit } button { cursor:pointer }
 .app-shell { min-height:100vh; display:flex; background:#f7f8fc; color:var(--ink) }
