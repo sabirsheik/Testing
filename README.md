@@ -13,6 +13,8 @@ npm run dev
 
 The frontend runs at `http://localhost:5173` and proxies `/api` requests to `http://localhost:4000`.
 
+When the frontend is deployed separately, set `VITE_API_URL` to the public API origin before building, for example `https://api.example.com`.
+
 Set `MONGODB_URI` and optionally `MONGODB_DB` in `.env` to enable MongoDB persistence. The server reuses one MongoDB client with a bounded pool and seeds the three demo collections only when they are empty.
 
 API endpoints include:

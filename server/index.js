@@ -64,7 +64,7 @@ async function seedDatabase() {
 }
 
 async function broadcast(event, payload) {
-  const message = `event: ${event}\\ndata: ${JSON.stringify(payload)}\\n\\n`
+  const message = `event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`
   clients.forEach((client) => client.write(message))
 }
 
@@ -95,7 +95,7 @@ app.patch('/api/tasks/:id', async (request, response, next) => {
   } catch (error) { next(error) }
 })
 app.post('/api/invitations', async (request, response) => { const email = String(request.body.email || '').trim(); if (!email) return response.status(400).json({ message: 'Email is required' }); await broadcast('invitation.sent', { email }); response.status(201).json({ email, status: 'sent' }) })
-app.get('/api/events', async (request, response) => { response.setHeader('Content-Type', 'text/event-stream'); response.setHeader('Cache-Control', 'no-cache'); response.setHeader('Connection', 'keep-alive'); response.flushHeaders?.(); response.write(`event: connected\\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\\n\\n`); clients.add(response); request.on('close', () => clients.delete(response)) })
+app.get('/api/events', async (request, response) => { response.setHeader('Content-Type', 'text/event-stream'); response.setHeader('Cache-Control', 'no-cache'); response.setHeader('Connection', 'keep-alive'); response.flushHeaders?.(); response.write(`event: connected\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`); clients.add(response); request.on('close', () => clients.delete(response)) })
 app.use((error, _request, response, _next) => { console.error(error); response.status(400).json({ message: error instanceof Error ? error.message : 'Request failed' }) })
 
 async function start() {

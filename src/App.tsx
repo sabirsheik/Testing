@@ -6,6 +6,9 @@ type Project = { _id: string; name: string; initials: string; description: strin
 type Task = { _id: string; label: string; project: string; checked: boolean; due: string }
 type Activity = { _id: string; initials: string; tone: string; actor: string; action: string; subject: string; detail: string }
 
+const apiBaseUrl = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '')
+const apiUrl = (path: string) => `${apiBaseUrl}${path}`
+
 const initialProjects: Project[] = [
   { _id: 'demo-WR', name: 'Website redesign', initials: 'WR', description: 'Refresh the marketing site and docs', status: 'On track', progress: 72, members: 8, due: 'Oct 24', tone: 'blue' },
   { _id: 'demo-MA', name: 'Mobile app v2', initials: 'MA', description: 'A faster, more personal mobile experience', status: 'At risk', progress: 48, members: 12, due: 'Nov 02', tone: 'orange' },
@@ -33,14 +36,14 @@ function App() {
   const filteredProjects = projects.filter((project) => `${project.name} ${project.description}`.toLowerCase().includes(search.toLowerCase()))
   const notify = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2800) }
   const refreshDashboard = async () => {
-    const response = await fetch('/api/dashboard')
+    const response = await fetch(apiUrl('/api/dashboard'))
     if (!response.ok) throw new Error('Unable to load dashboard')
     const data: { projects: Project[]; tasks: Task[]; activity: Activity[] } = await response.json()
     setProjects(data.projects); setTasks(data.tasks); setActivity(data.activity); setIsLoading(false)
   }
   useEffect(() => {
     queueMicrotask(() => { refreshDashboard().catch(() => { setIsLoading(false); notify('Using local demo data while the API reconnects') }) })
-    const events = new EventSource('/api/events')
+    const events = new EventSource(apiUrl('/api/events'))
     events.addEventListener('project.created', () => { refreshDashboard().catch(() => undefined) })
     events.addEventListener('task.updated', () => { refreshDashboard().catch(() => undefined) })
     return () => events.close()
@@ -48,7 +51,7 @@ function App() {
   const createProject = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!newProject.trim()) return
-    fetch('/api/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProject }) }).then(async (response) => {
+    fetch(apiUrl('/api/projects'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newProject }) }).then(async (response) => {
       if (!response.ok) throw new Error('Unable to create project')
       const project: Project = await response.json()
       setProjects((current) => [...current, project]); setNewProject(''); setShowProjectForm(false); notify('Project created successfully')
@@ -57,12 +60,17 @@ function App() {
   const toggleTask = (task: Task) => {
     const checked = !task.checked
     setTasks((current) => current.map((item) => item._id === task._id ? { ...item, checked } : item))
-    fetch(`/api/tasks/${task._id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ checked }) }).catch(() => notify('Could not save task update'))
+    fetch(apiUrl(`/api/tasks/${task._id}`), { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ checked }) }).then((response) => {
+      if (!response.ok) throw new Error('Unable to save task')
+    }).catch(() => {
+      setTasks((current) => current.map((item) => item._id === task._id ? { ...item, checked: task.checked } : item))
+      notify('Could not save task update')
+    })
   }
   const sendInvite = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const form = new FormData(event.currentTarget)
-    fetch('/api/invitations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.get('email') }) }).then((response) => {
+    fetch(apiUrl('/api/invitations'), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.get('email') }) }).then((response) => {
       if (!response.ok) throw new Error('Unable to send invite')
       setShowInvite(false); notify('Invitation sent')
     }).catch(() => notify('Could not send invitation'))
