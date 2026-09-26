@@ -1,7 +1,6 @@
 const Manger = () => {
   return (
     <div>
-      
     </div>
   )
 }
