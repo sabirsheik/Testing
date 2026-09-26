@@ -34,15 +34,6 @@ function cleanProject(project) {
   return { ...project, _id: project._id?.toString(), due: project.due instanceof Date ? project.due.toISOString().slice(0, 10) : project.due }
 }
 
-function getErrorStatus(error) {
-  if (error && typeof error.statusCode === 'number') return error.statusCode
-  if (error && typeof error.status === 'number') return error.status
-  if (error && error.name === 'MongoServerError') return 409
-  if (error && error.name === 'MongoNetworkError') return 503
-  if (error instanceof TypeError || error instanceof SyntaxError) return 400
-  return 500
-}
-
 async function getCollections() {
   if (!database) return null
   return { projects: database.collection('projects'), tasks: database.collection('tasks'), activity: database.collection('activity') }
@@ -90,14 +81,7 @@ app.use(cors())
 app.use(express.json())
 app.get('/api/health', (_request, response) => response.json({ ok: true, database: database ? 'mongodb' : 'memory', timestamp: new Date().toISOString() }))
 app.get('/api/dashboard', async (_request, response, next) => { try { response.json(await listData()) } catch (error) { next(error) } })
-app.post('/api/projects', async (request, response, next) => {
-  try {
-    const payload = request.body && typeof request.body === 'object' ? request.body : {}
-    const project = await createProject(payload)
-    await broadcast('project.created', project)
-    response.status(201).json(project)
-  } catch (error) { next(error) }
-})
+app.post('/api/projects', async (request, response, next) => { try { const project = await createProject(request.body); await broadcast('project.created', project); response.status(201).json(project) } catch (error) { next(error) } })
 app.patch('/api/tasks/:id', async (request, response, next) => {
   try {
     const checked = Boolean(request.body.checked)
@@ -112,11 +96,7 @@ app.patch('/api/tasks/:id', async (request, response, next) => {
 })
 app.post('/api/invitations', async (request, response) => { const email = String(request.body.email || '').trim(); if (!email) return response.status(400).json({ message: 'Email is required' }); await broadcast('invitation.sent', { email }); response.status(201).json({ email, status: 'sent' }) })
 app.get('/api/events', async (request, response) => { response.setHeader('Content-Type', 'text/event-stream'); response.setHeader('Cache-Control', 'no-cache'); response.setHeader('Connection', 'keep-alive'); response.flushHeaders?.(); response.write(`event: connected\ndata: ${JSON.stringify({ at: new Date().toISOString() })}\n\n`); clients.add(response); request.on('close', () => clients.delete(response)) })
-app.use((error, _request, response, _next) => {
-  console.error(error)
-  const status = getErrorStatus(error)
-  response.status(status).json({ message: error instanceof Error ? error.message : 'Request failed' })
-})
+app.use((error, _request, response, _next) => { console.error(error); response.status(400).json({ message: error instanceof Error ? error.message : 'Request failed' }) })
 
 async function start() {
   if (mongoUri) {
