@@ -2,7 +2,6 @@
 const store = () => {
   return (
     <div>
-      
     </div>
   )
 }
