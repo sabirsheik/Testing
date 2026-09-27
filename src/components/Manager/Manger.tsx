@@ -1,7 +1,7 @@
 const Manger = () => {
   return (
     <div>
-      'Manager'
+      'Manager OK'
     </div>
   )
 };
