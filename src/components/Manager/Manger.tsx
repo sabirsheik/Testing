@@ -2,6 +2,11 @@ const Manger = () => {
   return (
     <div>
       'Manager OK'
+
+
+
+
+      
     </div>
   )
 };
