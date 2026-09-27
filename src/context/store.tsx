@@ -5,5 +5,4 @@ const store = () => {
     </div>
   )
 }
-
-export default store
+export default store;

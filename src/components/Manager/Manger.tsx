@@ -4,5 +4,4 @@ const Manger = () => {
     </div>
   )
 }
-
-export default Manger
+export default Manger;
