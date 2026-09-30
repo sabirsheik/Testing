@@ -1,5 +1,4 @@
 # Northstar workspace
-
 Northstar is a React dashboard backed by an Express API. The API persists projects and tasks in MongoDB when `MONGODB_URI` is configured and automatically uses seeded in-memory data for local UI work when it is not.
 
 ## Run locally
